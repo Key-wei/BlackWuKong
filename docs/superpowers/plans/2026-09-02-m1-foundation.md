@@ -55,6 +55,7 @@
 - Create: `Source/CoreCombatTests/CoreCombatTests.cpp`
 - Create: `Source/CoreCombatTests/CCSanityTest.cpp`
 - Modify: `Source/CoreCombatEditor.Target.cs`
+- Modify: `CoreCombat.uproject`
 
 **Interfaces:**
 - Consumes: 无
@@ -130,7 +131,23 @@ IMPLEMENT_MODULE(FDefaultModuleImpl, CoreCombatTests);
 		ExtraModuleNames.Add("CoreCombatTests");
 ```
 
-- [ ] **Step 5: 编译**
+- [ ] **Step 5: 在 .uproject 声明模块**
+
+`Target.cs` 里的 `ExtraModuleNames` 只驱动**编译**，不负责**运行时加载**——UE 的模块管理器是从 `.uproject` 描述文件加载项目模块的。少了这一步，模块能编译出 dll 但不会被加载，测试运行时会报 `No automation tests matched`。
+
+修改 `CoreCombat.uproject`，在 `Modules` 数组中 `CoreCombat` 那一项之后追加：
+
+```json
+		{
+			"Name": "CoreCombatTests",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+```
+
+`Type` 必须是 `Editor`：UE 打包时会整体跳过 Editor 类型模块，因此不会进入 Game/Client/Server 目标，对发行版无影响。
+
+- [ ] **Step 6: 编译**
 
 ```bash
 "F:/20_Areas/GameDev/UE_5.8/Engine/Build/BatchFiles/Build.bat" CoreCombatEditor Win64 Development -Project="F:/10_Projects/CoreCombat/CoreCombat.uproject" -WaitMutex
@@ -138,19 +155,19 @@ IMPLEMENT_MODULE(FDefaultModuleImpl, CoreCombatTests);
 
 Expected: 结尾输出 `Total execution time:` 且无 error，`Binaries/Win64/` 下出现 `UnrealEditor-CoreCombatTests.dll`
 
-- [ ] **Step 6: 运行测试**
+- [ ] **Step 7: 运行测试**
 
 ```bash
 "F:/20_Areas/GameDev/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "F:/10_Projects/CoreCombat/CoreCombat.uproject" -ExecCmds="Automation RunTests CoreCombat.Sanity;Quit" -unattended -nopause -nullrhi -log
 ```
 
-Expected: 日志含 `Test Completed. Result={Passed}` 与 `CoreCombat.Sanity.ModuleLoads`
+Expected: 日志含 `Test Completed. Result={Success}` 与 `CoreCombat.Sanity.ModuleLoads`
 
-- [ ] **Step 7: 提交**
+- [ ] **Step 8: 提交**
 
 ```bash
 cd F:/10_Projects/CoreCombat
-git add Source/CoreCombatTests Source/CoreCombatEditor.Target.cs
+git add Source/CoreCombatTests Source/CoreCombatEditor.Target.cs CoreCombat.uproject
 git commit -m "test: 建立 CoreCombatTests 自动化测试模块"
 ```
 
@@ -293,7 +310,7 @@ namespace CCTags
 "F:/20_Areas/GameDev/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "F:/10_Projects/CoreCombat/CoreCombat.uproject" -ExecCmds="Automation RunTests CoreCombat.Tags;Quit" -unattended -nopause -nullrhi -log
 ```
 
-Expected: 编译通过；测试输出 `Result={Passed}`
+Expected: 编译通过；测试输出 `Result={Success}`
 
 - [ ] **Step 6: 提交**
 
@@ -644,7 +661,7 @@ void UCCAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 "F:/20_Areas/GameDev/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "F:/10_Projects/CoreCombat/CoreCombat.uproject" -ExecCmds="Automation RunTests CoreCombat.Attributes;Quit" -unattended -nopause -nullrhi -log
 ```
 
-Expected: 两个测试均 `Result={Passed}`
+Expected: 两个测试均 `Result={Success}`
 
 - [ ] **Step 6: 提交**
 
@@ -1424,7 +1441,7 @@ Expected: 编译通过，无 error
 "F:/20_Areas/GameDev/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "F:/10_Projects/CoreCombat/CoreCombat.uproject" -ExecCmds="Automation RunTests CoreCombat;Quit" -unattended -nopause -nullrhi -log
 ```
 
-Expected: 全部测试 `Result={Passed}`
+Expected: 全部测试 `Result={Success}`
 
 - [ ] **Step 6: 提交**
 
@@ -1806,7 +1823,7 @@ git commit -m "chore: 更新项目配置以适配新类层级"
 "F:/20_Areas/GameDev/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "F:/10_Projects/CoreCombat/CoreCombat.uproject" -ExecCmds="Automation RunTests CoreCombat;Quit" -unattended -nopause -nullrhi -log
 ```
 
-Expected: 编译无 error；全部测试 `Result={Passed}`；日志末尾无 `Test Completed. Result={Failed}`
+Expected: 编译无 error；全部测试 `Result={Success}`；日志末尾无 `Test Completed. Result={Fail}`
 
 ---
 
