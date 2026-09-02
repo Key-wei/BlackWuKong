@@ -19,13 +19,17 @@ bool FCCDamageFormulaTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("防御 300 时伤害为四分之一"),
         UCCAttributeSet::CalculateDamage(100.f, 300.f), 25.f);
 
+    // 伤害与原始值成正比：同一防御下换不同原始值，结果同比例缩放
+    TestEqual(TEXT("伤害与原始值成正比"),
+        UCCAttributeSet::CalculateDamage(50.f, 100.f), 25.f);
+
     // 负伤害不允许倒扣血量
     TestEqual(TEXT("负伤害钳制为 0"),
         UCCAttributeSet::CalculateDamage(-50.f, 0.f), 0.f);
 
-    // 防御为负数不应放大伤害到荒谬值
-    TestTrue(TEXT("负防御不会导致除零或负伤害"),
-        UCCAttributeSet::CalculateDamage(100.f, -500.f) >= 0.f);
+    // 负防御钳制到 0，等同于零防御（SafeDefense = max(0, D)），伤害原样穿透
+    TestEqual(TEXT("负防御按零防御处理"),
+        UCCAttributeSet::CalculateDamage(100.f, -500.f), 100.f);
 
     return true;
 }
@@ -46,27 +50,34 @@ bool FCCAttributeClampTest::RunTest(const FString& Parameters)
 
     Set->InitMaxHealth(200.f);
     Set->InitHealth(500.f);
-    Set->ClampAttributes();
+    Set->ClampAttributesForInit();
     TestEqual(TEXT("血量不超过上限"), Set->GetHealth(), 200.f);
 
     Set->InitHealth(-30.f);
-    Set->ClampAttributes();
+    Set->ClampAttributesForInit();
     TestEqual(TEXT("血量不低于 0"), Set->GetHealth(), 0.f);
 
     Set->InitMaxStance(5.f);
     Set->InitStance(9.f);
-    Set->ClampAttributes();
+    Set->ClampAttributesForInit();
     TestEqual(TEXT("棍势不超过上限"), Set->GetStance(), 5.f);
 
     Set->InitMaxMana(100.f);
     Set->InitMana(-10.f);
-    Set->ClampAttributes();
+    Set->ClampAttributesForInit();
     TestEqual(TEXT("法力不低于 0"), Set->GetMana(), 0.f);
 
     Set->InitMaxPoise(80.f);
     Set->InitPoise(120.f);
-    Set->ClampAttributes();
+    Set->ClampAttributesForInit();
     TestEqual(TEXT("韧性不超过上限"), Set->GetPoise(), 80.f);
+
+    // MaxHealth 为负时，ClampAttributesForInit 应先把上限钳制到下限，
+    // 再钳制当前值——结果不得出现负血量。
+    Set->InitMaxHealth(-50.f);
+    Set->InitHealth(50.f);
+    Set->ClampAttributesForInit();
+    TestTrue(TEXT("负 MaxHealth 下血量不为负"), Set->GetHealth() >= 0.f);
 
     return true;
 }

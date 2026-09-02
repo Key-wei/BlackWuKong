@@ -42,8 +42,13 @@ public:
 	 */
 	static float CalculateDamage(float RawDamage, float DefensePower);
 
-	/** 把所有属性钳制回合法区间。测试与属性初始化后调用。 */
-	void ClampAttributes();
+	/**
+	 * 把所有属性钳制回合法区间。
+	 * 直接用 InitXxx 写 Base/Current，绕过 ASC 聚合器，
+	 * 只能用于初始化或 ASC-less 单元测试，
+	 * 不得在有 active duration GE 的活体 ASC 上调用。
+	 */
+	void ClampAttributesForInit();
 
 	FOnAttributeChangedSignature OnHealthChanged;
 	FOnAttributeChangedSignature OnManaChanged;
@@ -98,4 +103,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Meta")
 	FGameplayAttributeData Damage;
 	ATTRIBUTE_ACCESSORS(UCCAttributeSet, Damage)
+
+private:
+	/** 血量归零时打上死亡标记；已有标记则不重复添加（AddLooseGameplayTag 是引用计数的） */
+	void ApplyDeathTagIfNeeded(UAbilitySystemComponent& Target);
 };
