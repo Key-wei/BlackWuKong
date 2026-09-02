@@ -19,3 +19,4 @@ Content/
 *.sdf
 *.VC.db
 *.VC.opendb
+.superpowers/

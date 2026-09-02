@@ -60,12 +60,13 @@
 - Consumes: 无
 - Produces: 名为 `CoreCombatTests` 的模块，测试可通过 `UnrealEditor-Cmd.exe` 的 `-ExecCmds="Automation RunTests CoreCombat"` 运行
 
-- [ ] **Step 1: 写一个必定通过的哨兵测试**
+- [ ] **Step 1: 写验证模块加载的测试**
 
 创建 `Source/CoreCombatTests/CCSanityTest.cpp`：
 
 ```cpp
 #include "Misc/AutomationTest.h"
+#include "Modules/ModuleManager.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FCCSanityTest,
@@ -74,7 +75,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FCCSanityTest::RunTest(const FString& Parameters)
 {
-    TestEqual(TEXT("测试模块能够加载并执行"), 1 + 1, 2);
+    // 验证测试模块到主模块的依赖真的接上了：
+    // 若 CoreCombatTests.Build.cs 的依赖配置有误，主模块不会被加载。
+    TestTrue(TEXT("CoreCombat 主模块已加载"),
+        FModuleManager::Get().IsModuleLoaded(TEXT("CoreCombat")));
+
+    TestTrue(TEXT("CoreCombatTests 测试模块已加载"),
+        FModuleManager::Get().IsModuleLoaded(TEXT("CoreCombatTests")));
+
     return true;
 }
 ```
