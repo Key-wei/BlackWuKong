@@ -1,0 +1,21 @@
+# UE 构建产物
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+
+# 资产不入库（Content 约 40G，本地自行备份）
+Content/
+
+# IDE
+.idea/
+.vs/
+.vsconfig
+*.sln
+*.slnx
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
