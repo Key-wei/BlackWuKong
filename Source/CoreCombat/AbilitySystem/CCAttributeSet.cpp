@@ -5,7 +5,13 @@
 
 namespace
 {
-	/** Max 类属性的下限：为 0 或负数会让 FMath::Clamp 反向钳制出负的当前值 */
+	/**
+	 * Max 类属性的下限：为 0 或负数会让 FMath::Clamp 反向钳制出负的当前值。
+	 *
+	 * 注意：因为有这个下限，**不能**用 MaxPoise = 0 表示"该角色没有韧性"
+	 * （会静默变成 1 点韧性、挨一下就破）。无韧性由 UCCCharacterInitData 的
+	 * bUsesPoise 开关表示，见 spec §4.5（杨戬不被普通攻击打断）。
+	 */
 	constexpr float MinMaxAttributeValue = 1.f;
 }
 

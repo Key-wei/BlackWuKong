@@ -1,14 +1,11 @@
-# UE 构建产物
+# Unreal Engine generated build products
 Binaries/
 Intermediate/
 Saved/
 DerivedDataCache/
 Build/
 
-# 资产不入库（Content 约 40G，本地自行备份）
-Content/
-
-# IDE
+# IDE / local-only files
 .idea/
 .vs/
 .vsconfig

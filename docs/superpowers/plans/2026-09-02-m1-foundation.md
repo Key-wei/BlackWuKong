@@ -777,7 +777,7 @@ git commit -m "feat: ASC 子类与 Tag 读写封装"
 
 **Interfaces:**
 - Consumes: 无
-- Produces: `UCCCharacterInitData`，公开字段 `MaxHealth`、`MaxMana`、`MaxStance`、`MaxPoise`、`AttackPower`、`DefensePower`（均为 `float`）与 `TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities`。Task 6 的 `CCCharacterBase` 读取它初始化属性。
+- Produces: `UCCCharacterInitData`，公开字段 `MaxHealth`、`MaxMana`、`MaxStance`、`MaxPoise`、`AttackPower`、`DefensePower`（均为 `float`）、`bUsesPoise`（`bool`，默认 `true`）与 `TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities`。Task 6 的 `CCCharacterBase` 读取它初始化属性。
 
 - [ ] **Step 1: 写头文件**
 
@@ -814,6 +814,15 @@ public:
 	/** 韧性上限。杨戬不使用韧性（见 spec §4.5），其资产此项可保持默认 */
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float MaxPoise = 100.f;
+
+	/**
+	 * 该角色是否使用韧性系统。
+	 * 杨戬为 false——不会被普通攻击打断行动（见 spec §4.5）。
+	 * 注意：不要用 MaxPoise = 0 表达"无韧性"，AttributeSet 有 Max 下限保护，
+	 * 0 会被钳制成 1，静默变成"1 点韧性、一下就破"。
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	bool bUsesPoise = true;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float AttackPower = 10.f;
